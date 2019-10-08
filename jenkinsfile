@@ -1,32 +1,5 @@
-#!/usr/bin/env groovy
-
-import groovy.json.JsonOutput
-
-properties(
-  [
-    buildDiscarder(
-      logRotator(
-        artifactDaysToKeepStr: '5',
-        artifactNumToKeepStr: '1',
-        daysToKeepStr: '3',
-        numToKeepStr: '3'
-      )
-    ),
-    disableConcurrentBuilds(),
-  ]
-)
-
-// Global variables
-currentStageName = ''
-
-// ### Project-Specific Configuration ##
-
-// GIT
 def gitSource = 'git@github.com:qingmei-xia/thirdProj.git';
 def masterBranchName = 'master'
-
-def environment = params.environment
-def command = params.command
 
 try {
   node {
@@ -37,55 +10,26 @@ try {
       def workspace = pwd()
       echo "workspace=${workspace}"
 
-      checkout(
-          [
-            $class: 'GitSCM',
-            branches:
-              [[
-                name: '*/master'
-              ]],
-            doGenerateSubmoduleConfigurations: false,
-            extensions:
-              [[
-                 $class: 'SubmoduleOption',
-                 disableSubmodules: false,
-                 parentCredentials: true,
-                 recursiveSubmodules: true,
-                 reference: '',
-                 trackingSubmodules: false
-              ]],
-            gitTool: 'Default',
-            submoduleCfg: [],
-            userRemoteConfigs:
-              [[
-                credentialsId: gitCredentialsId,
-                url: gitSource
-              ]]
-          ]
-      )
+    checkout
+    (
+      [
+        $class: 'GitSCM', 
+        branches: [[name: '*/master']], 
+        doGenerateSubmoduleConfigurations: false, 
+        extensions: [], 
+        submoduleCfg: [], 
+        userRemoteConfigs: [[url: 'https://github.com/qingmei-xia/thirdProj']]
+      ]
+    )
 
       currentStageName = 'Preparation'
     }
 
     stage('Flyway') {
       echo 'Flyway'
-
-      echo "parameter environment = " + environment
-      echo "parameter command = " + command
-
-      if (environment != '' && command != '') {
-        withMaven(
-          maven: 'maven',
-          mavenSettingsConfig: 'flyway-maven-settings'
-        ){
-          // Run Build Commands
           sh """
-            mvn -P ${params.environment} flyway:${params.command}
+            mvn -P testdb flyway:info
           """
-        }
-      } else {
-        currentBuild.result = 'ABORTED'
-        error('one or more parameters are not provided.')
       }
 
       currentStageName = 'Flyway'
