@@ -2,26 +2,22 @@
 
 import groovy.json.JsonOutput
 
-def currentStageName=""
 def gitSource="https://github.com/qingmei-xia/thirdProj"
 def dbname=params.dbname
+def action=params.action
 try{
     node{
         stage('prepare'){
-            echo "prepare stage"
+            echo "prepare stage: to check out files"
             git "${gitSource}"
-            currentStageName="prepare"
-            echo "${currentStageName}"
         }
         stage('flyway'){
-            echo "flyway stage"
-	    tool name: 'mvn', type: 'maven'
+            echo "flyway: make action:${action} for db:${dbname}"
             sh label: '', script: '''
-	    mvn -P ${dbname} flyway:migrate
+	    mvn -P ${dbname} flyway:${action}
+	    echo "checking result for db:${dbname} after action; ${action}"
             mvn -P ${dbname} flyway:info
             '''
-            currentStageName="flyway"
-            echo "${currentStageName}"
         }
     }
 }catch(exc){
