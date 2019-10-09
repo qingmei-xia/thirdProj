@@ -15,12 +15,11 @@ try{
         }
         stage('flyway'){
             echo "flyway stage"
-            sh label: "", script: """
-            export MAVEN_HOME=/opt/apache-maven-3.6.2
-            export PATH=$PATH:$MAVEN_HOME/bin
+	    tool name: 'mvn', type: 'maven'
+            sh label: '', script: '''
 	    mvn -P ${dbname} flyway:migrate
             mvn -P ${dbname} flyway:info
-            """
+            '''
             currentStageName="flyway"
             echo "${currentStageName}"
         }
