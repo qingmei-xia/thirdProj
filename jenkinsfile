@@ -4,7 +4,7 @@ import groovy.json.JsonOutput
 
 def currentStageName=""
 def gitSource="https://github.com/qingmei-xia/thirdProj"
-def dbname=${evn.dbname}
+def dbname=${params.dbname}
 try{
     node{
         stage('prepare'){
@@ -15,12 +15,12 @@ try{
         }
         stage('flyway'){
             echo "flyway stage"
-            sh label: '', script: '''
+            sh label: "", script: """
             export MAVEN_HOME=/opt/apache-maven-3.6.2
             export PATH=$PATH:$MAVEN_HOME/bin
 	    mvn -P ${dbname} flyway:migrate
             mvn -P ${dbname} flyway:info
-            '''
+            """
             currentStageName="flyway"
             echo "${currentStageName}"
         }
