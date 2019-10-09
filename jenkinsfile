@@ -1,43 +1,29 @@
-def gitSource = 'git@github.com:qingmei-xia/thirdProj.git';
-def masterBranchName = 'master'
+#!/usr/bin/env groovy
 
-try {
-  node {
-    
-    stage('Preparation') {
-      echo 'Preparation'
-      echo "BUILD_URL=${env.BUILD_URL}"
-      def workspace = pwd()
-      echo "workspace=${workspace}"
+import groovy.json.JsonOutput
 
-    checkout
-    (
-      [
-        $class: 'GitSCM', 
-        branches: [[name: '*/master']], 
-        doGenerateSubmoduleConfigurations: false, 
-        extensions: [], 
-        submoduleCfg: [], 
-        userRemoteConfigs: [[url: 'https://github.com/qingmei-xia/thirdProj']]
-      ]
-    )
-
-      currentStageName = 'Preparation'
+def currentStageName=""
+def gitSource="https://github.com/qingmei-xia/thirdProj"
+try{
+    node{
+        stage('prepare'){
+            echo "prepare stage"
+            git "${gitSource}"
+            currentStageName="prepare"
+            echo "${currentStageName}"
+        }
+        stage('flyway'){
+            echo "flyway stage"
+            sh label: '', script: '''
+            export MAVEN_HOME=/opt/apache-maven-3.6.2
+            export PATH=$PATH:$MAVEN_HOME/bin
+            mvn -P testdb flyway:migrate
+            '''
+            currentStageName="flyway"
+            echo "${currentStageName}"
+        }
     }
-
-    stage('Flyway') {
-      echo 'Flyway'
-          sh """
-            mvn -P testdb flyway:info
-          """
-      }
-
-      currentStageName = 'Flyway'
-    }
-    
-  currentBuild.result = 'SUCCESS'
-} catch (exc) {
-  currentBuild.result = 'FAILURE'
-  throw exc
+}catch(exc){
+    currentBuild.result="failure"
+    throw exc
 }
-
