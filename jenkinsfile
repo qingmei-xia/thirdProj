@@ -1,1 +1,29 @@
+#!/usr/bin/env groovy
 
+import groovy.json.JsonOutput
+
+def currentStageName=""
+def gitSource="https://github.com/qingmei-xia/thirdProj"
+try{
+    node{
+        stage('prepare'){
+            echo "prepare stage"
+            git "${gitSource}"
+            currentStageName="prepare"
+            echo "${currentStageName}"
+        }
+        stage('flyway'){
+            echo "flyway stage"
+            sh label: '', script: '''
+            export MAVEN_HOME=/opt/apache-maven-3.6.2
+            export PATH=$PATH:$MAVEN_HOME/bin
+            mvn -P testdb flyway:info
+            '''
+            currentStageName="flyway"
+            echo "${currentStageName}"
+        }
+    }
+}catch(exc){
+    currentBuild.result="failure"
+    throw exc
+}
