@@ -4,7 +4,7 @@ import groovy.json.JsonOutput
 
 def currentStageName=""
 def gitSource="https://github.com/qingmei-xia/thirdProj"
-def dbname=${params.dbname}
+def dbname=params.dbname
 try{
     node{
         stage('prepare'){
