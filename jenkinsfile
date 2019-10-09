@@ -17,7 +17,7 @@ try{
             sh label: '', script: '''
             export MAVEN_HOME=/opt/apache-maven-3.6.2
             export PATH=$PATH:$MAVEN_HOME/bin
-            mvn -P testdb flyway:info
+            mvn -P testdb flyway:migrate
             '''
             currentStageName="flyway"
             echo "${currentStageName}"
